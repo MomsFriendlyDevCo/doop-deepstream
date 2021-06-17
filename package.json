@@ -3,12 +3,20 @@
   "version": "0.0.0",
   "description": "Deepstream.io adapter for Doop",
   "main": "doop.backend.hooks.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MomsFriendlyDevCo/doop-deepstream.git"
+  },
   "keywords": [
     "doop",
     "deepstream"
   ],
   "author": "Matt Carter <m@ttcarter.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MomsFriendlyDevCo/doop-deepstream/issues"
+  },
+  "homepage": "https://github.com/MomsFriendlyDevCo/doop-deepstream#readme",
   "dependencies": {
     "@deepstream/client": "^5.2.4",
     "@deepstream/server": "^5.2.4",
