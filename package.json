@@ -2,14 +2,17 @@
   "name": "@doop/deepstream",
   "version": "0.0.0",
   "description": "Deepstream.io adapter for Doop",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "doop.backend.hooks.js",
   "keywords": [
     "doop",
     "deepstream"
   ],
   "author": "Matt Carter <m@ttcarter.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@deepstream/client": "^5.2.4",
+    "@deepstream/server": "^5.2.4",
+    "buffer": "^6.0.3",
+    "lodash": "^4.17.21"
+  }
 }
