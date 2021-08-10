@@ -37,7 +37,7 @@ app.component({
 		},
 	},
 	created() {
-		// this.$debug.enabled = true;
+		this.$debug.enable(true);
 		this.record = this.$deepstream.record.getRecord('debug/deepstream');
 		this.record.subscribe(values => {
 			this.$debug('GET', this.doc);
