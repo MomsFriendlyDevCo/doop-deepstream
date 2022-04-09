@@ -1,3 +1,6 @@
+/**
+* Config to be merged into the global Doop config
+*/
 exports let config = {
 	deepstream: {
 		port: 6020,
@@ -22,7 +25,7 @@ exports let config = {
 	layout: {
 		$config: {
 			deepstream: {
-				url: `${app.config.deepstream.config.serverName}${app.config.deepstream.path}:${app.config.deepstream.port}`,
+				url: `${app.config.deepstream.config.serverName}:${app.config.deepstream.port}`,
 			},
 		},
 	},
