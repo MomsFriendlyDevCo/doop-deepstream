@@ -1,0 +1,54 @@
+<script lang="js" backend on="init">
+let fs = require('node:fs');
+let {Deepstream} = require('@deepstream/server');
+let {DeepstreamService} = require('./deepstream.mjs');
+
+// Add CORS rule
+app.config.layout.csp['connect-src'].push(`ws://${app.config.deepstream.config.serverName}:${app.config.deepstream.port}`);
+
+return Promise.resolve()
+	.then(()=> Promise.all([
+		app.config.deepstream.ssl.enabled && fs.promises.readFile(app.config.deepstream.ssl.key, 'utf8'),
+		app.config.deepstream.ssl.enabled && fs.promises.readFile(app.config.deepstream.ssl.cert, 'utf8'),
+	]))
+	.then(([key, cert]) => {
+		app.deepstream = new DeepstreamService();
+		app.deepstream.server = new Deepstream({
+			// @url https://deepstream.io/docs/server/configuration/
+			showLogo: false,
+			logLevel: 'DEBUG',
+			telemetry: {
+				type: 'deepstreamIO',
+				options: {
+					enabled: false,
+				},
+			},
+			httpServer: {
+				type: 'default',
+				urlPath: app.config.deepstream.path,
+				options: {
+					allowAllOrigins: true, // FIXME: Needs securing
+					port: app.config.deepstream.port,
+				},
+				origins: [
+					app.config.url,
+				],
+				...(app.config.deepstream.ssl ? {ssl: {
+					cert,
+					key,
+				}} : {}),
+			},
+			clusterNode: {
+				name: 'redis',
+				options: {
+					host: 'localhost',
+					port: '6379',
+				},
+			},
+			...app.config.deepstream.config,
+		});
+	})
+	.then(()=> app.deepstream.server.start()) // Boot server
+	.then(()=> app.deepstream.connect(`${app.config.deepstream.config.serverName}:${app.config.deepstream.port}`)) // Boot local isomorphic client
+	.then(()=> app.log('Deepstream server running at', app.log.colors.cyan(app.config.deepstream.path + ':' + app.config.deepstream.port)))
+</script>

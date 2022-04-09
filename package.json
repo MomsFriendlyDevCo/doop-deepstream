@@ -2,7 +2,8 @@
   "name": "@doop/deepstream",
   "version": "0.0.0",
   "description": "Deepstream.io adapter for Doop",
-  "main": "doop.backend.hooks.js",
+  "type": "module",
+  "main": "deepstream.mjs",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MomsFriendlyDevCo/doop-deepstream.git"
@@ -18,9 +19,9 @@
   },
   "homepage": "https://github.com/MomsFriendlyDevCo/doop-deepstream#readme",
   "dependencies": {
-    "@deepstream/client": "^5.2.4",
-    "@deepstream/server": "^5.2.4",
-    "buffer": "^6.0.3",
-    "lodash": "^4.17.21"
+    "@deepstream/client": "^6.0.0",
+    "@deepstream/clusternode-redis": "^1.0.1",
+    "@deepstream/server": "^6.1.0",
+    "@deepstream/storage-mongodb": "^2.0.8"
   }
 }
