@@ -83,7 +83,13 @@ export class DeepstreamService {
 	has(path) {
 		return this.getRecord(path)
 			.then(record => record.get())
-			.then(data => !! data)
+			.then(data =>
+				data
+				&& ( // Either it has a scalar value or is a non-empty object
+					typeof data != 'object'
+					|| Object.keys(data).length > 0
+				)
+			)
 	};
 
 
