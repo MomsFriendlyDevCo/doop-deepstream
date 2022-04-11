@@ -116,4 +116,27 @@ export class DeepstreamService {
 		return this.getRecord(path)
 			.then(record => record.subscribe(cb))
 	};
+
+
+	/**
+	* RPC wrapper for Deepstream
+	* @type {Object}
+	*/
+	rpc = {
+		/**
+		* Set up a RPC endpoint similar to `app.get()`
+		* @param {string} name The name of the endpoint, usually in big-endian `noun.verb` notation (e.g. 'users.refresh')
+		* @param {function] cb Callback function to handle the endpoint
+		*/
+		provide: (...args) => this.client.rpc.provide(...args),
+
+
+		/**
+		* Call an RPC endpoint
+		* @param {string} name The RPC registered function name to call
+		* @param {*} [args...] Optional additional arguments
+		* @returns {*} The return of the RPC call, if any
+		*/
+		call: (...args) => this.client.rpc.make(...args),
+	};
 }
