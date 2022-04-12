@@ -126,17 +126,30 @@ export class DeepstreamService {
 		/**
 		* Set up a RPC endpoint similar to `app.get()`
 		* @param {string} name The name of the endpoint, usually in big-endian `noun.verb` notation (e.g. 'users.refresh')
-		* @param {function] cb Callback function to handle the endpoint
+		* @param {function} cb Async function to handle the endpoint
+		* @returns {Object} The root chainable object
 		*/
-		provide: (...args) => this.client.rpc.provide(...args),
+		provide: (name, cb) => {
+			this.client.rpc.provide(name, (data, response) => {
+				Promise.resolve(cb(data))
+					.then(cbResponse => response.send(cbResponse))
+					.catch(e => response.error(e.toString()))
+			});
+
+			return this;
+		},
 
 
 		/**
-		* Call an RPC endpoint
+		* Call an RPC endpoint, returning a promise for the eventual result
 		* @param {string} name The RPC registered function name to call
 		* @param {*} [args...] Optional additional arguments
-		* @returns {*} The return of the RPC call, if any
+		* @returns {Promise<*>} A promise which will return the result of the RPC call, if any
 		*/
-		call: (...args) => this.client.rpc.make(...args),
+		call: (name, args) => new Promise((resolve, reject) =>
+			this.client.rpc.make(name, args, (err, res) =>
+				err ? reject(err, res) : resolve(res)
+			)
+		),
 	};
 }
