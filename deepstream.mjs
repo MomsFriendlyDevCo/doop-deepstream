@@ -110,11 +110,21 @@ export class DeepstreamService {
 	* Wraps the Deepstrem get + subscribe functionality to return a function which will exec on each change
 	* @param {string} path The Deepstream path to subscribe to
 	* @param {function} cb The callback function, called as `(data)` which will be called on changes
+	* @param {Object} [options] Initial options to use when subscribing
+	* @param {boolean} [options.immediate=true] Whether to fire the subscription immediately with the current value, if falsy only updates will fire the callback
 	* @returns {Promise} A promise which resolves when the fetching + subscription has completed
 	*/
-	subscribe(path, cb) {
+	subscribe(path, cb, options) {
+		var settings = {
+			immediate: true,
+			...options,
+		};
+
 		return this.getRecord(path)
-			.then(record => record.subscribe(cb))
+			.then(record => {
+				if (settings.immediate) cb(record.get());
+				return record.subscribe(cb)
+			})
 	};
 
 
