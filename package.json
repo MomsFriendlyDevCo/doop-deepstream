@@ -1,6 +1,6 @@
 {
   "name": "@doop/deepstream",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Deepstream.io adapter for Doop",
   "type": "module",
   "main": "deepstream.mjs",
