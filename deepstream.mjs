@@ -52,7 +52,7 @@ export class DeepstreamService {
 		if (this.pathCache[path]) { // Already in cache
 			return Promise.resolve(this.pathCache[path]);
 		} else { // Need to fetch + wait on ready
-			 return new Promise(resolve =>
+			return new Promise(resolve =>
 				 this.client.record.getRecord(path)
 					.whenReady(record => {
 						this.pathCache[path] = record;
@@ -64,14 +64,60 @@ export class DeepstreamService {
 
 
 	/**
+	* Split a simple path into Deepstream compatible name + path components
+	* Note that the name is always the first path segment for deepstream and the path is the remaining part
+	* @param {string|array} Path to seperate in either dotted notation, slash notation or array form
+	* @param {boolean} [nameOnly=false] Whether to split into name+path or just name
+	* @returns {Object} An object composed of `{docName: String, docPath: String|Undefined}`
+	*/
+	splitPath(path, nameOnly = false) {
+		let pathBits = Array.isArray(path)
+			? path.map(p => p.replace(/[\.\/]+/g, '_')) // Remove splitter characters from the path
+			: path.split(/[\.\/]+/);
+
+		if (nameOnly) {
+			return {
+				docName: pathBits.join('.'),
+			};
+		} else if (pathBits.length == 1) {
+			return {
+				docName: pathBits[0],
+				docPath: undefined,
+			};
+		} else {
+			return {
+				docName: pathBits.shift(),
+				docPath: pathBits.join('.'),
+			}
+		}
+	};
+
+
+	/**
 	* Get the current value of a Deepstream path ONCE
 	* @see subscribe() for updates
 	* @param {string} path The Deepstream path to fetch
+	* @param {*} fallback Fallback value if the record doesn't exist, if undefined the function will instead throw if no value is found
 	* @returns {Promise<*>} A promise which will resolve with the record value
 	*/
-	get(path) {
-		return this.getRecord(path)
-			.then(record => record.get())
+	get(path, fallback) {
+		let {docPath, docName} = this.splitPath(path);
+
+		if (docPath) { // Complex path setter - we have to use getRecord()
+			return this.getRecord(docName)
+				.then(record => record.get(docPath) || fallback)
+		} else { // Simple key/val setter - can use direct setting via snapshot()
+			return new Promise((resolve, reject) =>
+				this.client.record.snapshot(
+					docName,
+					(err, val) => {
+						err === 'RECORD_NOT_FOUND' && fallback ? resolve(fallback)
+						: err ? reject(err, val)
+						: resolve(val)
+					}
+				)
+			);
+		}
 	};
 
 
@@ -81,28 +127,35 @@ export class DeepstreamService {
 	* @returns {Promise<boolean>} A promise which will resolve if the path has a non-empty value
 	*/
 	has(path) {
-		return this.getRecord(path)
-			.then(record => record.get())
-			.then(data =>
-				data
-				&& ( // Either it has a scalar value or is a non-empty object
-					typeof data != 'object'
-					|| Object.keys(data).length > 0
-				)
+		return new Promise((resolve, reject) =>
+			this.client.record.has(
+				path.splitPath(path, true).docName,
+				(err, hasRecord) => err ? reject(err) : resolve(hasRecord)
 			)
+		);
 	};
 
 
 	/**
 	* Simple setter for a Deepstream path
-	* @param {string} path The Deepstream to set
+	* @param {string} path The Deepstream to set in dotted, slash or array notation
 	* @param {*} value The value to set
 	* @returns {*} The new value set
+	*
+	* @example Set a simple key/val
+	* deeepstream.set('foo', {bar: {baz: [1, 2, 3]}});
+	*
+	* @example Append a new key to foo.bar
+	* deeepstream.set('foo/bar', {quz: 'Hello'});
+	*
+	* @example Append to an array
+	* deeepstream.set('foo/bar/baz/3', 'New item')
 	*/
 	set(path, value) {
-		return this.getRecord(path)
-			.then(record => new Promise(resolve => record.set(value, resolve)))
-			.then(()=> value)
+		let {docName, docPath} = this.splitPath(path);
+		return new Promise(resolve =>
+			this.client.record.setData(docName, docPath, value, ()=> resolve(value))
+		);
 	};
 
 
@@ -120,7 +173,7 @@ export class DeepstreamService {
 			...options,
 		};
 
-		return this.getRecord(path)
+		return this.getRecord(this.splitPath(path, true).docName)
 			.then(record => {
 				if (settings.immediate) cb(record.get());
 				return record.subscribe(cb)
