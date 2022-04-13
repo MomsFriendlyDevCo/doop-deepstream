@@ -168,14 +168,15 @@ export class DeepstreamService {
 	* @returns {Promise} A promise which resolves when the fetching + subscription has completed
 	*/
 	subscribe(path, cb, options) {
+		let {docName, docPath} = this.splitPath(path);
 		var settings = {
 			immediate: true,
 			...options,
 		};
 
-		return this.getRecord(this.splitPath(path, true).docName)
+		return this.getRecord(docName)
 			.then(record => {
-				if (settings.immediate) cb(record.get());
+				if (settings.immediate) cb(record.get(docPath));
 				return record.subscribe(cb)
 			})
 	};
