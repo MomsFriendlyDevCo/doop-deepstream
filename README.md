@@ -100,6 +100,12 @@ Async function to set a given, nested path.
 See `splitPath()` for valid path specifications.
 
 
+merge(path, values)
+-------------------
+Convenience async function to merge the given `values` object into an existing object + save.
+See `splitPath()` for valid path specifications.
+
+
 subscribe(path, cb, options?)
 -----------------------------
 Subscribe to a path, calling the callback as `cb(newValue)` for any change.

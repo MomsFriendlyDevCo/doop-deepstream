@@ -160,6 +160,19 @@ export class DeepstreamService {
 
 
 	/**
+	* Merge the given data into an existing object
+	* @param {string} path The DS record path to manipulate
+	* @param {Object} value The data to merge
+	*/
+	merge(path, value) {
+		this.get(path, {})
+			.then(existingValue => Object.assign(existingValue, value))
+			.then(newValue => this.set(path, newValue))
+	};
+
+
+
+	/**
 	* Wraps the Deepstrem get + subscribe functionality to return a function which will exec on each change
 	* @param {string} path The Deepstream path to subscribe to
 	* @param {function} cb The callback function, called as `(data)` which will be called on changes
