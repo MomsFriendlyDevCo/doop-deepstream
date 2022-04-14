@@ -24,6 +24,22 @@ export class DeepstreamService {
 
 
 	/**
+	* Options for this Deepstream wrapper
+	* @type {Object}
+	*/
+	options = {
+		pathAtNotation: true,
+		pathSplitSlash: true,
+		pathSplitDot: false,
+		split: str =>
+			this.options.pathSplitSlash && this.options.pathSplitDot ? str.split(/[\.\/]+/) // Try to split string by slashes + dots
+			: this.options.pathSplitSlash ? str.split(/\/+/) // Try to split string by slashes only
+			: this.options.pathSplitDot ? str.split(/\.+/) // Try to split string by dots only
+			: str,
+	};
+
+
+	/**
 	* Connect to the server, this must be called before any other method is used
 	* @param {Object} [auth] Optional auth params to use
 	* @returns {Promise} A promise which will resolve when the connection is complete
@@ -66,30 +82,52 @@ export class DeepstreamService {
 	/**
 	* Split a simple path into Deepstream compatible name + path components
 	* Note that the name is always the first path segment for deepstream and the path is the remaining part
+	*
+	* This function accepts the following path styles:
+	*     `foo/bar/baz` - Save record as `foo/bar/baz`
+	*     `['foo', 'bar', 'baz']` - Save record as `foo/bar/baz` directly with no subkey
+	*     `foo/bar/baz@` - Save record as `foo/bar/baz` directly with no subkey (as above)
+	*     `foo/bar@baz` - Save record as `foo/bar` into `baz` subkey
+	*     `{path: 'foo/bar/baz'}` - Save as `foo/bar/baz'` directly with no subkey
+	*     `{path: ['foo', 'bar'], subkey: ['baz']}` - Save as `foo/bar'` directly with `baz` subkey - NOTE: Object notation is trusted and no validation is performed
+	*
+	*
 	* @param {string|array} Path to seperate in either dotted notation, slash notation or array form
 	* @param {boolean} [nameOnly=false] Whether to split into name+path or just name
 	* @returns {Object} An object composed of `{docName: String, docPath: String|Undefined}`
 	*/
-	splitPath(path, nameOnly = false) {
-		let pathBits = Array.isArray(path)
-			? path.map(p => p.replace(/[\.\/]+/g, '_')) // Remove splitter characters from the path
-			: path.split(/[\.\/]+/);
+	splitPathRaw(path, nameOnly = false) {
+		// Path type mangling {{{
+		let pathBits =
+			Array.isArray(path) ? {path} // Use base array if one given
+			: typeof path == 'object' ? path // Use base object definition if one given
+			: this.options.pathAtNotation && /@/.test(path) ? {path: this.options.split(path.split('@', 2)[0]), subkey: this.options.split(path.split('@', 2)[1])} // Obey '@' name@subPath spec if present
+			: typeof path == 'string' ? {path: this.options.split(path)} // Simple strings
+			: (()=> { throw new Error('Unrecognised path format') })();
+
+		pathBits.path = pathBits.path
+			.map(p => p.replace(/[\.\/]+/g, '_')) // Escape all values if needed
+
+		if (!Array.isArray(pathBits.path)) throw new Error('Unrecognised path format - post processing');
+		// }}}
 
 		if (nameOnly) {
 			return {
-				docName: pathBits.join('.'),
-			};
-		} else if (pathBits.length == 1) {
-			return {
-				docName: pathBits[0],
+				docName: pathBits.path.join('.'),
 				docPath: undefined,
 			};
 		} else {
 			return {
-				docName: pathBits.shift(),
-				docPath: pathBits.join('.'),
-			}
+				docName: pathBits.path.join('.'),
+				docPath: pathBits.subkey && pathBits.subkey.length > 0 ? pathBits.subkey.join('.') || undefined : undefined,
+			};
 		}
+	};
+
+	splitPath(path, nameOnly = false) {
+		let res = this.splitPathRaw(path, nameOnly);
+		console.log('SPLIT', {path, nameOnly}, '=>', res);
+		return res;
 	};
 
 

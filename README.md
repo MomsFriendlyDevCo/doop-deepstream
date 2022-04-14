@@ -8,6 +8,7 @@ Features vs. Vanilla Deepstream:
 * Entirely promise based - no weird callbacks that DS seems to prefer for _some_ methods
 * Minimal `get()` / `set()` implementations which try to avoid subscribing to Deepstream to fetch data when possible
 * Names are dropped entirely to use paths which can be in `dotted.notation`, `slash/notation` or `['array', 'format']`
+* Distinction from record names and subkeys via At notation - e.g. `this/is/a/record@this/is/a/subkey`
 * Array format paths are automatically escaped if any member contains a splitter character (dots or slashes)
 
 
@@ -54,6 +55,20 @@ API
 client
 ------
 The actual DeepstreamClient instance.
+
+
+options
+-------
+General options for the Deepstram wrapper.
+
+Options are:
+
+| Option           | Type       | Default  | Description                              |
+|------------------|------------|----------|------------------------------------------|
+| `pathAtNotation` | `boolean`  | `true`   | Support At notation when splitting paths |
+| `pathSplitSlash` | `boolean`  | `true`   | Support path seperators with slashes     |
+| `pathSplitDot`   | `boolean`  | `false`  | Support path seperators with dots        |
+| `split`          | `function` | See code | Path spliter function                    |
 
 
 pathCache
