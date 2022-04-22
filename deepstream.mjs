@@ -105,8 +105,14 @@ export class DeepstreamService {
 			: typeof path == 'string' ? {path: this.options.split(path)} // Simple strings
 			: (()=> { throw new Error('Unrecognised path format') })();
 
-		pathBits.path = pathBits.path
-			.map(p => p.replace(/[\.\/]+/g, '_')) // Escape all values if needed
+
+		// Escape all values in each segment
+		['path', 'subkey']
+			.filter(field => pathBits[field]?.length > 0)
+			.forEach(field =>
+				pathBits[field] = pathBits[field]
+					.map(p => p.replace(/[\.\/]+/g, '_'))
+			);
 
 		if (!Array.isArray(pathBits.path)) throw new Error('Unrecognised path format - post processing');
 		// }}}
