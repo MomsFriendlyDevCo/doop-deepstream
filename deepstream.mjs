@@ -96,7 +96,7 @@ export class DeepstreamService {
 	* @param {boolean} [nameOnly=false] Whether to split into name+path or just name
 	* @returns {Object} An object composed of `{docName: String, docPath: String|Undefined}`
 	*/
-	splitPathRaw(path, nameOnly = false) {
+	splitPath(path, nameOnly = false) {
 		// Path type mangling {{{
 		let pathBits =
 			Array.isArray(path) ? {path} // Use base array if one given
@@ -128,12 +128,6 @@ export class DeepstreamService {
 				docPath: pathBits.subkey && pathBits.subkey.length > 0 ? pathBits.subkey.join('.') || undefined : undefined,
 			};
 		}
-	};
-
-	splitPath(path, nameOnly = false) {
-		let res = this.splitPathRaw(path, nameOnly);
-		console.log('SPLIT', {path, nameOnly}, '=>', res);
-		return res;
 	};
 
 
