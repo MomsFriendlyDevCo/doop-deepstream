@@ -171,12 +171,15 @@ export class DeepstreamService {
 	* @returns {Promise<boolean>} A promise which will resolve if the path has a non-empty value
 	*/
 	has(path) {
-		return new Promise((resolve, reject) =>
-			this.client.record.has(
-				path.splitPath(path, true).docName,
-				(err, hasRecord) => err ? reject(err) : resolve(hasRecord)
+		return this.get(path, false)
+			.then(data =>
+				data // Truthy...
+				&& (
+					(Array.isArray(data) && data.length > 0) // Non-empty array
+					|| typeof data != 'object' // Scalar OR
+					|| Object.keys(data).length > 0 // Non-empty object
+				)
 			)
-		);
 	};
 
 
