@@ -230,9 +230,25 @@ export class DeepstreamService {
 
 		return this.getRecord(docName)
 			.then(record => {
+				// BUGFIX: For some reason the record.subscribe(path, cb, isImmediate?) doesn't fire on the first fetch so we have to do it here
 				if (settings.immediate) cb(record.get(docPath));
-				return record.subscribe(cb)
+
+				return record.subscribe(docPath, cb);
 			})
+	};
+
+
+	/**
+	* Unsubscribe from a specific Deepstream path
+	* NOTE: This will only actually release if `force=true` or the number of remaining subscribers is zero
+	* @param {string} path The Deepstream path to unsubscribe from
+	* @param {boolean} cb The callback to unsubscribe from
+	* @returns {Promise} A promise which resolves when the operation has completed
+	*/
+	unsubscribe(path, cb) {
+		let {docName, docPath} = this.splitPath(path);
+		return this.getRecord(docName)
+			.then(record => record.unsubscribe(cb))
 	};
 
 

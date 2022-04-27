@@ -132,6 +132,37 @@ Options can be:
 | `immediate` | `boolean` | `true`  | Whether to fire the subscription immediately with the current value, if falsy only updates will fire the callback |
 
 
+unsubscribe(path, cb)
+---------------------
+Release a given callback from its subscription.
+
+
+VUE: bindData(vuePath, dsPath, options?)
+----------------------------------------
+Bind a local Vue variable to a remote Deepstream path.
+Read or writes to the remote will sync with local (assuming the correct `allow{Read,Write}` options are enabled).
+
+Options can be:
+
+| Option       | Type       | Default | Description                                                              |
+|--------------|------------|---------|--------------------------------------------------------------------------|
+| `immediate`  | `boolean`  | `true`  | Whether to fetch the state immediately after subscription                |
+| `allowRead`  | `boolean`  | `true`  | Keep the local state up to date with the remote                          |
+| `allowWrite` | `boolean`  | `true`  | Keep the remote state up to date with local                              |
+| `readData`   | `function` |         | Function to call as `(newData)` when any data is incomming from remote   |
+| `writeData`  | `function` |         | Function to call as `(newData)` before changes are transmitted to remote |
+
+**Notes:**
+* Data object parameters in `readData` and `writeData` can mutate incomming / outgoing data respectively
+* Setting `{allowWrite: false}` is essencially the same as `$deepstream.subscribe(path, cb)` but automatically updates local state without a callback
+
+
+VUE: destroyVM()
+----------------
+Clean up all bindings and release any pending subscriptions.
+Called automatically when a Vue component is entering the `beforeDestroy` lifecycle stage.
+
+
 
 rpc
 ---
