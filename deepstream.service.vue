@@ -16,9 +16,6 @@ globalThis.Buffer = Buffer;
 app.service('$deepstream', function() {
 	let $deepstream = new DeepstreamService();
 
-	$deepstream.id = 666;
-	$deepstream.connect(this.$config.deepstream.url);
-
 	app.vue.$on('$session.settled', ()=>
 		$deepstream.connect(this.$config.deepstream.url)
 	);
