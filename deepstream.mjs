@@ -31,6 +31,7 @@ export class DeepstreamService {
 		pathAtNotation: true,
 		pathSplitSlash: true,
 		pathSplitDot: false,
+		preferWss: true,
 		split: str =>
 			this.options.pathSplitSlash && this.options.pathSplitDot ? str.split(/[\.\/]+/) // Try to split string by slashes + dots
 			: this.options.pathSplitSlash ? str.split(/\/+/) // Try to split string by slashes only
@@ -41,11 +42,15 @@ export class DeepstreamService {
 
 	/**
 	* Connect to the server, this must be called before any other method is used
+	* If options.preferWss is specified and this server looks like its running via HTTPS the WSS:// protocol is used instead of the regular ws://
 	* @param {Object} [auth] Optional auth params to use
 	* @returns {Promise} A promise which will resolve when the connection is complete
 	*/
 	connect(url, auth = {}) {
-		this.client = new DeepstreamClient(url);
+		this.client = new DeepstreamClient(
+			this.options.preferWss && globalThis.window?.location.protocol == 'https:' ? 'wss://' + url.replace(/^ws:/, '')
+			: url
+		);
 		return new Promise((resolve, reject) =>
 			this.client.login(auth, (success, err) => {
 				if (success) {
