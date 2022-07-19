@@ -14,42 +14,51 @@ return Promise.resolve()
 	.then(([key, cert]) => {
 		app.deepstream = new DeepstreamService();
 
-		app.deepstream.server = new Deepstream({
-			// @url https://deepstream.io/docs/server/configuration/
-			showLogo: false,
-			logLevel: 'DEBUG',
-			telemetry: {
-				type: 'deepstreamIO',
-				options: {
-					enabled: false,
+		if ((app.config.deepstream?.server ?? false)) {
+			app.deepstream.server = new Deepstream({
+				// @url https://deepstream.io/docs/server/configuration/
+				showLogo: false,
+				logLevel: 'DEBUG',
+				telemetry: {
+					type: 'deepstreamIO',
+					options: {
+						enabled: false,
+					},
 				},
-			},
-			httpServer: {
-				type: 'default',
-				urlPath: app.config.deepstream.path,
-				options: {
-					allowAllOrigins: true, // FIXME: Needs securing
-					port: app.config.deepstream.port,
+				httpServer: {
+					type: 'default',
+					urlPath: app.config.deepstream.path,
+					options: {
+						allowAllOrigins: true, // FIXME: Needs securing
+						port: app.config.deepstream.port,
+					},
+					origins: [
+						app.config.url,
+					],
+					...(app.config.deepstream.ssl ? {ssl: {
+						cert,
+						key,
+					}} : {}),
 				},
-				origins: [
-					app.config.url,
-				],
-				...(app.config.deepstream.ssl ? {ssl: {
-					cert,
-					key,
-				}} : {}),
-			},
-			clusterNode: {
-				name: 'redis',
-				options: {
-					host: 'localhost',
-					port: '6379',
+				clusterNode: {
+					name: 'redis',
+					options: {
+						host: 'localhost',
+						port: '6379',
+					},
 				},
-			},
-			...app.config.deepstream.config,
-		});
+				...app.config.deepstream.config,
+			});
+
+			return new Promise(resolve => {
+				app.deepstream.server.on('started', ()=> resolve());
+
+				app.deepstream.server.start() // Kick off server boot (annoyingly this isn't a promise so we wait for the above started event to fire)
+			})
+				.then(()=> app.log('Deepstream server running at', app.log.colors.cyan(app.config.deepstream.path + ':' + app.config.deepstream.port)))
+		} else {
+			app.log('Deepstream server disabled - Connecting to Deepstream as a client only');
+		}
 	})
-	.then(()=> app.deepstream.server.start()) // Boot server
 	.then(()=> app.deepstream.connect(`${app.config.deepstream.config.serverName}:${app.config.deepstream.port}`)) // Boot local isomorphic client
-	.then(()=> app.log('Deepstream server running at', app.log.colors.cyan(app.config.deepstream.path + ':' + app.config.deepstream.port)))
 </script>
