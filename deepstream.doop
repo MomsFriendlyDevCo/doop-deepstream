@@ -18,7 +18,6 @@ return Promise.resolve()
 			app.deepstream.server = new Deepstream({
 				// @url https://deepstream.io/docs/server/configuration/
 				showLogo: false,
-				logLevel: 'DEBUG',
 				telemetry: {
 					type: 'deepstreamIO',
 					options: {
