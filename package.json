@@ -21,7 +21,7 @@
   "dependencies": {
     "@deepstream/client": "^6.0.5",
     "@deepstream/clusternode-redis": "^1.0.1",
-    "@deepstream/server": "^6.2.1",
+    "@deepstream/server": "^6.2.2",
     "@deepstream/storage-mongodb": "^2.0.8"
   }
 }
