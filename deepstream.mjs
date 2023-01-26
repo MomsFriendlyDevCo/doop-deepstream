@@ -206,6 +206,19 @@ export class DeepstreamService {
 
 
 	/**
+	* Destroy a Deepstram path
+	* NOTE: This function only deals with absolute deepstream paths, any subkey pathing is ignored
+	*/
+	unset(path) {
+		let {docName, docPath} = this.splitPath(path);
+		if (docPath) throw new Error(`deepstream.unset() does not support subkeys. Remove the "${docPath}" from the unset path`);
+
+		return this.getRecord(docName)
+			.then(record => record.delete())
+	};
+
+
+	/**
 	* Merge the given data into an existing object
 	* @param {string} path The DS record path to manipulate
 	* @param {Object} value The data to merge
