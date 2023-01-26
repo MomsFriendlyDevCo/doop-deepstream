@@ -48,7 +48,7 @@ export class DeepstreamService {
 	*/
 	connect(url, auth = {}) {
 		this.client = new DeepstreamClient(
-			this.options.preferWss && globalThis.window?.location.protocol == 'https:' ? 'wss://' + url.replace(/^ws:/, '')
+			this.options.preferWss && globalThis.window?.location.protocol == 'https:' ? 'wss://' + url.replace(/^ws:\/\//, '')
 			: url
 		);
 		return new Promise((resolve, reject) =>
